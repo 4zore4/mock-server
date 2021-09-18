@@ -1,4 +1,4 @@
-package com.netease.mock;
+package com.var.mock;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
