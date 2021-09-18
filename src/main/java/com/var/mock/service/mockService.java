@@ -29,4 +29,17 @@ public class mockService {
         return null;
     }
 
+//    提供一个方法删除path
+    public Boolean del(String path){
+//        to do
+
+        return false;
+    }
+
+//    提供一个方法修改path
+    public Boolean reset(String path){
+//        to do
+        return false;
+    }
+
 }
