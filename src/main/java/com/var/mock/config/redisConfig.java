@@ -18,66 +18,54 @@ import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 
 
-@EnableCaching
+
 @Configuration
-class RedisConfig extends CachingConfigurerSupport {
+public class redisConfig {
+
+    /**
+     * 配置redis的连接池，相关参数在application.yml中配置
+     */
+    @Value("${spring.redis.database}")
+    private int database;
 
     @Value("${spring.redis.host}")
     private String host;
-    @Value("${spring.redis.database}")
-    private Integer database;
+
     @Value("${spring.redis.port}")
-    private Integer port;
+    private int port;
+
     @Value("${spring.redis.password}")
-    private String pwd;
+    private String password;
 
+    @Value("${spring.redis.timeout}")
+    private int timeout;
 
-    @Primary
-    @Bean(name = "jedisPoolConfig")
-    @ConfigurationProperties(prefix = "spring.redis.pool")
-    public JedisPoolConfig jedisPoolConfig() {
-        JedisPoolConfig jedisPoolConfig = new JedisPoolConfig();
-        jedisPoolConfig.setMaxWaitMillis(10000);
-        return jedisPoolConfig;
-    }
+    @Value("${spring.redis.jedis.pool.max-idle}")
+    private int maxIdle;
 
-    public RedisConnectionFactory redisConnectionFactory(JedisPoolConfig jedisPoolConfig) {
-        RedisStandaloneConfiguration redisStandaloneConfiguration = new RedisStandaloneConfiguration();
-        redisStandaloneConfiguration.setHostName(host);
-        redisStandaloneConfiguration.setDatabase(database);
-        redisStandaloneConfiguration.setPassword(pwd);
-        redisStandaloneConfiguration.setPort(port);
+    @Value("${spring.redis.jedis.pool.min-idle}")
+    private int minIdle;
 
-        JedisClientConfiguration.JedisPoolingClientConfigurationBuilder jpcb = (JedisClientConfiguration.JedisPoolingClientConfigurationBuilder) JedisClientConfiguration.builder();
-        jpcb.poolConfig(jedisPoolConfig);
-        JedisClientConfiguration jedisClientConfiguration = jpcb.build();
-        return new JedisConnectionFactory(redisStandaloneConfiguration, jedisClientConfiguration);
-    }
+    @Value("${spring.redis.jedis.pool.max-total}")
+    private int maxTotal;
 
-    @Primary
-    @Bean(name = "redisTemplate")
-    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory factory) {
-        RedisTemplate<String, Object> template = new RedisTemplate<>();
-        template.setConnectionFactory(factory);
-        StringRedisSerializer stringRedisSerializer = new StringRedisSerializer();
-        template.setKeySerializer(stringRedisSerializer);
-        template.setHashKeySerializer(stringRedisSerializer);
-        Jackson2JsonRedisSerializer<Object> redisSerializer = new Jackson2JsonRedisSerializer<>(Object.class);
-        template.setValueSerializer(redisSerializer);
-        template.setHashValueSerializer(redisSerializer);
-        template.afterPropertiesSet();
-        return template;
-    }
+    @Value("${spring.redis.jedis.pool.max-wait}")
+    private long maxWait;
+
     @Bean
-    public JedisPool redisPoolFactory() {
+    public JedisPool redisPoolFactory() throws Exception {
         JedisPoolConfig jedisPoolConfig = new JedisPoolConfig();
-        System.out.println(host);
-        System.out.println(port);
-        System.out.println(pwd);
-        return new JedisPool(jedisPoolConfig, host, port, 1000, pwd);
+        jedisPoolConfig.setMaxIdle(maxIdle);
+        jedisPoolConfig.setMaxTotal(maxTotal);
+        jedisPoolConfig.setMaxWaitMillis(maxWait);
+        jedisPoolConfig.setBlockWhenExhausted(false);
+        jedisPoolConfig.setJmxEnabled(true);
+        if (password.equals("")) {
+            password = null;
+        }
+        JedisPool jedisPool = new JedisPool(jedisPoolConfig, host, port, timeout, password, database);
+
+        return jedisPool;
     }
-
-
-
 }
 
