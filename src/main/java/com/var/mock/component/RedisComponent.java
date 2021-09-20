@@ -44,6 +44,28 @@ public class RedisComponent {
         return res == 1;
     }
 
+    public Boolean set(String key, String value){
+        Jedis jedis = jedisPool.getResource();
+        try {
+            String res = jedis.set(key,value);
+            System.out.println(res);
+            return true;
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+
+    public String get(String key){
+        Jedis jedis = jedisPool.getResource();
+        try {
+            return jedis.get(key);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return null;
+    }
 
 
 }

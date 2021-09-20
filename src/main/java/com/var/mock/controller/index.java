@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Date;
@@ -31,15 +32,20 @@ public class index {
 
     @ResponseBody
     @RequestMapping(value = "/savePath", method = RequestMethod.POST)
-    public String savePath(@RequestBody Data data){
+    public String savePath(@RequestBody Data data,HttpServletRequest request){
+        Cookie[] cookies = request.getCookies();
+        for (Cookie cookie : cookies){
+            System.out.println(cookie.getPath());
+        }
         String path = data.getPath();
         String code = data.getCode();
         Map<String, String> json = data.getJson();
         System.out.println(path);
         System.out.println(code);
         System.out.println(json.toString());
-        Boolean flag = mockService.saveToRedis(path, code, JSON.toJSONString(json));
-        return flag.toString();
+//        Boolean flag = mockService.saveToRedis(path, code, JSON.toJSONString(json));
+//        return flag.toString();
+        return "test";
     }
 
 }
