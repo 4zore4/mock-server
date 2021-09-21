@@ -13,6 +13,7 @@ import sun.security.krb5.internal.PAData;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 @Controller
 public class login {
@@ -29,7 +30,11 @@ public class login {
         Boolean isExist = loginService.isExist(user);
         if (isExist){
             Cookie cookie = new Cookie("user",user.getUsername());
+            cookie.setPath("/");
             cookie.setMaxAge(60*1000);
+            HttpSession session = request.getSession();
+            session.setAttribute("user",user.getUsername());
+            session.setMaxInactiveInterval(50*60);
             response.addCookie(cookie);
         }
         return "test";

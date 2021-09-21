@@ -13,8 +13,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.Date;
-import java.util.Map;
+import javax.servlet.http.HttpSession;
+import javax.swing.plaf.synth.SynthOptionPaneUI;
+import javax.websocket.Session;
+import java.util.*;
 
 @Controller
 public class index {
@@ -32,20 +34,52 @@ public class index {
 
     @ResponseBody
     @RequestMapping(value = "/savePath", method = RequestMethod.POST)
-    public String savePath(@RequestBody Data data,HttpServletRequest request){
-        Cookie[] cookies = request.getCookies();
-        for (Cookie cookie : cookies){
-            System.out.println(cookie.getPath());
+    public Map<String,String> savePath(@RequestBody Data data,HttpServletRequest request){
+        Map<String,String> response = new HashMap<>();
+        boolean isLogin = isLogin(request);
+        if (!isLogin){
+            response.put("errmsg","请先登录");
+            return response;
+
         }
         String path = data.getPath();
         String code = data.getCode();
         Map<String, String> json = data.getJson();
-        System.out.println(path);
-        System.out.println(code);
-        System.out.println(json.toString());
-//        Boolean flag = mockService.saveToRedis(path, code, JSON.toJSONString(json));
-//        return flag.toString();
+        Boolean flag = mockService.saveToRedis(path, code, JSON.toJSONString(json));
+        response.put("success",flag.toString());
+        return response;
+    }
+
+    @ResponseBody
+    @RequestMapping(path = "/test",method = RequestMethod.GET)
+    public String test1(HttpServletRequest request,HttpServletResponse response){
+        Cookie cookie = new Cookie("user","qiao");
+        cookie.setPath("/test");
+        cookie.setMaxAge(100*60);
+        cookie.setValue("test");
+        response.addCookie(cookie);
         return "test";
+    }
+
+//    判断是否已经登录
+    private Boolean isLogin(HttpServletRequest request){
+        Cookie[] cookies = request.getCookies();
+        List<String> cookieValues = new ArrayList();
+        for (Cookie cookie : cookies) {
+            if (cookie.getName().equals("user")){
+                cookieValues.add(cookie.getValue());
+            }
+        }
+        if (cookieValues.isEmpty()){
+            return false;
+        }
+
+        HttpSession session = request.getSession();
+        String sessionValue = (String) session.getAttribute("user");
+        if (sessionValue == null || sessionValue.length() == 0 || !cookieValues.contains(sessionValue)){
+            return false;
+        }
+        return true;
     }
 
 }
